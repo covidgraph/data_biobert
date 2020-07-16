@@ -32,7 +32,7 @@ driver = GraphDatabase.driver(neo4j_url, auth=(neo4j_user, neo4j_pw))
 pubmed_abstract_query = """
 UNWIND $parameters as data
 MATCH (p:PaperID)
-WHERE p.type = 'pubmed_id' AND p.id = toInteger(data.pubmed_id)
+WHERE p.type = 'pubmed_id' AND p.id = toString(data.pubmed_id)
 MATCH (p)<-[:PAPER_HAS_PAPERID]-()-[:PAPER_HAS_ABSTRACTCOLLECTION]->()-[:ABSTRACTCOLLECTION_HAS_ABSTRACT]->(abstract)
 MERGE (n:NamedEntity{type:data.entity_type, value:data.entity_value})
 ON CREATE SET n.id = data.entity_id
