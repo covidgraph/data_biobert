@@ -61,6 +61,6 @@ with driver.session() as session:
                 session.run(pubmed_abstract_query, {'parameters': parameters})
                 parameters = []
         # import the rest
-        session.run(pubmed_abstract_query, parameters)
+        session.run(pubmed_abstract_query, {'parameters': parameters})
 
 
