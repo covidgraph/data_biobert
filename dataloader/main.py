@@ -4,9 +4,9 @@ from neo4j import GraphDatabase
 import requests
 import csv
 
-neo4j_url = os.getenv('GC_NEO4J_URL', 'bolt://localhost:7687')
+neo4j_url = os.getenv('GC_NEO4J_URL', 'bolt://db-dev.covidgraph.org:7687')
 neo4j_user = os.getenv('GC_NEO4J_USER', 'neo4j')
-neo4j_pw = os.getenv('GC_NEO4J_PASSWORD', 'test')
+neo4j_pw = os.getenv('GC_NEO4J_PASSWORD', 'CureCovid46')
 ENV = os.getenv('ENV', 'prod')
 
 PUBMED_ABSTRACT_DOWNLOAD_URL = 'https://drive.google.com/u/0/uc?id=1Rlv70gNtalFp4T4XtpI6psJdJJzZFTTY&export=download'
@@ -22,12 +22,14 @@ def download_csv(url, filename):
 pubmed_abstract_query = """
     UNWIND $parameters as data
     MATCH (p:PaperID)
-    WHERE p.type = 'pubmed_id' AND p.id = data.pubmed_id
+    WHERE p.type = 'pubmed_id' AND p.id = toString(data.pubmed_id)
     MATCH (p)<-[:PAPER_HAS_PAPERID]-()-[:PAPER_HAS_ABSTRACTCOLLECTION]->()-[a:ABSTRACTCOLLECTION_HAS_ABSTRACT]->(abstract)
     WHERE a.position = 0
     MERGE (n:NamedEntity{id:data.entity_id})
     ON CREATE SET n += {type:data.entity_type, value:data.entity_value}
-    MERGE (abstract)-[:MENTIONS]->(n)
+    MERGE (abstract)-[m:MENTIONS]->(n)
+    ON CREATE SET m.count = 1
+    ON MATCH SET m.count = m.count + 1
     """
 
 create_named_entity_constraint = """
